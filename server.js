@@ -3,6 +3,7 @@
 var http = require('http')
 var fs = require("fs")
 var url = require("url")
+var redis = require("redis")
 
 var handler = {}
 handler["/"] = start
@@ -61,9 +62,27 @@ function client(res, postdata) {
 function cloudpicture(res, query, postdata) {
 	console.log(query.user)
 	console.log(query.node)
-	res.writeHead(200, {'Content-Type': 'text/html'})
-	res.write('');
-	res.end('')
+	var PORT = 6379;
+	var HOST = '127.0.0.1';
+
+	var client = redis.createClient(PORT, HOST);
+	client.hget(query.user, "1", function(err, reply) {
+
+		/*
+			I donot know what happened to the binary!!
+			Stop here!
+		*/
+		res.writeHead(200, {'Content-Type': 'application/octet-stream'})
+		res.write(reply);
+		res.end();
+
+		fs.writeFile("test.jpg", reply, "binary", function(err) {
+			if(err) {
+				console.log(err);
+			}
+		})
+
+	})
 }
 
 
